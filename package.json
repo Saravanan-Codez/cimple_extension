@@ -95,6 +95,10 @@
       {
         "command": "falkon.showWalkthrough",
         "title": "Falkon: Show Welcome Walkthrough"
+      },
+      {
+        "command": "falkon.resetOnboarding",
+        "title": "Falkon: Reset Onboarding State (Developer)"
       }
     ],
     "languages": [

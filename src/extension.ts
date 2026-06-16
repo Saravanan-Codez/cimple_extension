@@ -157,9 +157,45 @@ export function activate(context: vscode.ExtensionContext): void {
     })
   );
 
+  const checkCompletionStatus = () => {
+    const hasVerifiedCli = context.globalState.get<boolean>("falkon.hasVerifiedCli", false);
+    const hasOpenedSettings = context.globalState.get<boolean>("falkon.hasOpenedSettings", false);
+    if (hasVerifiedCli && hasOpenedSettings) {
+      context.globalState.update("falkon.walkthroughCompleted", true);
+    }
+  };
+
+  let hasPromptedThisSession = false;
+
+  const triggerOnboardingPrompt = () => {
+    if (hasPromptedThisSession) {
+      return;
+    }
+    const isCompleted = context.globalState.get<boolean>("falkon.walkthroughCompleted", false);
+    const isDismissed = context.globalState.get<boolean>("falkon.walkthroughPromptDismissed", false);
+
+    if (!isCompleted && !isDismissed) {
+      hasPromptedThisSession = true;
+      vscode.window.showInformationMessage(
+        "Welcome to Falkon! Get started by verifying the compiler CLI and configuring your shortcuts.",
+        "Open Walkthrough",
+        "Don't Show Again"
+      ).then((selection) => {
+        if (selection === "Open Walkthrough") {
+          context.globalState.update("falkon.walkthroughPromptDismissed", true);
+          vscode.commands.executeCommand("falkon.showWalkthrough");
+        } else if (selection === "Don't Show Again") {
+          context.globalState.update("falkon.walkthroughPromptDismissed", true);
+        }
+      });
+    }
+  };
+
   // Command: falkon.checkCli
   context.subscriptions.push(
     vscode.commands.registerCommand("falkon.checkCli", async () => {
+      context.globalState.update("falkon.hasVerifiedCli", true);
+      checkCompletionStatus();
       const existing = vscode.window.terminals.find(
         (t: vscode.Terminal) => t.name === "Falkon Check"
       );
@@ -180,6 +216,8 @@ export function activate(context: vscode.ExtensionContext): void {
   // Command: falkon.openSettings
   context.subscriptions.push(
     vscode.commands.registerCommand("falkon.openSettings", () => {
+      context.globalState.update("falkon.hasOpenedSettings", true);
+      checkCompletionStatus();
       vscode.commands.executeCommand("workbench.action.openSettings", "falkon");
     })
   );
@@ -194,11 +232,34 @@ export function activate(context: vscode.ExtensionContext): void {
     })
   );
 
+  // Command: falkon.resetOnboarding
+  context.subscriptions.push(
+    vscode.commands.registerCommand("falkon.resetOnboarding", async () => {
+      await context.globalState.update("falkon.hasVerifiedCli", undefined);
+      await context.globalState.update("falkon.hasOpenedSettings", undefined);
+      await context.globalState.update("falkon.walkthroughCompleted", undefined);
+      await context.globalState.update("falkon.walkthroughPromptDismissed", undefined);
+      hasPromptedThisSession = false;
+      vscode.window.showInformationMessage("Falkon onboarding state has been reset.");
+    })
+  );
+
+  // Listen for config changes to track shortcut configuration step completion
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration("falkon.shortcutPreset") || e.affectsConfiguration("falkon.enableDebugIntercept")) {
+        context.globalState.update("falkon.hasOpenedSettings", true);
+        checkCompletionStatus();
+      }
+    })
+  );
+
   // Status bar: show only when a .flk file is active
   const updateStatusBar = (editor?: vscode.TextEditor) => {
     if (!statusBarItem) { return; }
     if (editor && isFalkonFile(editor.document.uri.fsPath)) {
       statusBarItem.show();
+      triggerOnboardingPrompt();
     } else {
       statusBarItem.hide();
     }
