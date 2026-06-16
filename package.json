@@ -150,7 +150,7 @@
     "walkthroughs": [
       {
         "id": "falkonWalkthrough",
-        "title": "⚡ Get Started with Falkon 🚀",
+        "title": "$(sync~spin) Get Started with Falkon",
         "description": "Set up Falkon language support, verify your compiler, and configure your shortcut. ✨",
         "steps": [
           {
