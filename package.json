@@ -150,24 +150,24 @@
     "walkthroughs": [
       {
         "id": "falkonWalkthrough",
-        "title": "Get Started with Falkon",
-        "description": "Set up Falkon language support, verify your compiler, and configure your shortcut.",
+        "title": "⚡ Get Started with Falkon 🚀",
+        "description": "Set up Falkon language support, verify your compiler, and configure your shortcut. ✨",
         "steps": [
           {
             "id": "welcome",
-            "title": "Welcome to Falkon",
+            "title": "👋 Welcome to Falkon",
             "description": "Thank you for installing Falkon Language Support!\n\nThis extension provides syntax highlighting for .flk files, a Build & Run command (default F4), and a status bar compiler indicator.\n\nFollow the next steps to finish setup.",
             "media": {
-              "image": "resources/images/falkon_256x256-removebg.png",
+              "image": "resources/images/welcome.svg",
               "altText": "Falkon Logo"
             }
           },
           {
             "id": "verifyCli",
-            "title": "Verify Falkon CLI",
+            "title": "🔍 Verify Falkon CLI",
             "description": "The falkon compiler must be in your system PATH.\n\n[Run CLI Check](command:falkon.checkCli)\n\nThis opens a terminal running falkon -v and updates the status bar.",
             "media": {
-              "image": "resources/images/falkon_256x256-removebg.png",
+              "image": "resources/images/verify_cli.svg",
               "altText": "Falkon CLI Check"
             },
             "completionEvents": [
@@ -176,10 +176,10 @@
           },
           {
             "id": "configureShortcut",
-            "title": "Configure Build Shortcut",
+            "title": "⚙️ Configure Build Shortcut",
             "description": "The default shortcut is F4. You can change it to Ctrl+F5, F7, or none from settings.\n\n[Open Falkon Settings](command:falkon.openSettings)",
             "media": {
-              "image": "resources/images/falkon_256x256-removebg.png",
+              "image": "resources/images/configure_shortcut.svg",
               "altText": "Falkon Settings"
             },
             "completionEvents": [

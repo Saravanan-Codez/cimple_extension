@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <!-- Keycap Gradients -->
+    <linearGradient id="keyTopGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4F4F5A" />
+      <stop offset="100%" stop-color="#2D2D35" />
+    </linearGradient>
+    <linearGradient id="keySideGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#26262B" />
+      <stop offset="100%" stop-color="#18181C" />
+    </linearGradient>
+    <linearGradient id="neonGlowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D2FF" /> <!-- Cyan -->
+      <stop offset="100%" stop-color="#0066FF" /> <!-- Blue -->
+    </linearGradient>
+    <!-- Glow filter -->
+    <filter id="waveGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <style>
+    .background {
+      fill: #121214;
+    }
+    .key-group {
+      transform-origin: 128px 128px;
+      animation: keyPress 2.5s ease-in-out infinite;
+    }
+    .key-side {
+      fill: url(#keySideGrad);
+    }
+    .key-top {
+      fill: url(#keyTopGrad);
+      stroke: #666675;
+      stroke-width: 1;
+    }
+    .key-label {
+      fill: #00FFFF;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      filter: drop-shadow(0 0 4px rgba(0,255,255,0.7));
+    }
+    .glowing-wave {
+      fill: none;
+      stroke: url(#neonGlowGrad);
+      stroke-width: 3;
+      transform-origin: 128px 138px;
+      filter: url(#waveGlow);
+      animation: rippleEffect 2.5s ease-out infinite;
+    }
+    @keyframes keyPress {
+      0%, 100% {
+        transform: translateY(-8px);
+      }
+      50% {
+        transform: translateY(2px);
+      }
+    }
+    @keyframes rippleEffect {
+      0%, 30% {
+        transform: scale(0.6);
+        opacity: 0;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1.6);
+        opacity: 0;
+      }
+    }
+  </style>
+
+  <!-- Dark Rounded Background -->
+  <rect width="256" height="256" rx="48" class="background" />
+
+  <!-- Expanding Ripple Wave -->
+  <ellipse cx="128" cy="138" rx="80" ry="40" class="glowing-wave" />
+
+  <!-- Animated Key Cap Group (Isometric Style) -->
+  <g class="key-group">
+    <!-- Key Base/Sides -->
+    <!-- Front Face -->
+    <path d="M68 128 L188 128 L178 158 L78 158 Z" class="key-side" />
+    <!-- Left Face -->
+    <path d="M68 128 L78 158 L52 142 L48 112 Z" fill="#1C1C20" />
+    <!-- Right Face -->
+    <path d="M188 128 L208 112 L202 142 L178 158 Z" fill="#111113" />
+    
+    <!-- Top Face (Key Surface) -->
+    <path d="M48 112 L128 82 L208 112 L128 128 Z" class="key-top" />
+    
+    <!-- Key Legend Label -->
+    <text x="128" y="108" class="key-label">F4</text>
+  </g>
+</svg>
