@@ -150,8 +150,9 @@
     "walkthroughs": [
       {
         "id": "falkonWalkthrough",
-        "title": "$(sync~spin) Get Started with Falkon",
+        "title": "⚡ Get Started with Falkon 🚀",
         "description": "Set up Falkon language support, verify your compiler, and configure your shortcut. ✨",
+        "icon": "resources/images/welcome.svg",
         "steps": [
           {
             "id": "welcome",
