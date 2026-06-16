@@ -146,38 +146,38 @@
     ],
     "walkthroughs": [
       {
-        "id": "falkon.walkthrough",
+        "id": "falkonWalkthrough",
         "title": "Get Started with Falkon",
         "description": "Set up Falkon language support, verify your compiler, and configure your shortcut.",
         "steps": [
           {
-            "id": "welcomeStep",
-            "title": "Welcome to Falkon 🚀",
-            "description": "Thank you for installing **Falkon Language Support**!\n\nThis extension gives you:\n- Python-compatible syntax highlighting for `.flk` files\n- A dedicated **Build & Run** command (default: **F4**)\n- A status bar indicator showing your compiler status\n- A terminal-based build pipeline via `falkon build`\n\nComplete the steps below to finish your setup.",
+            "id": "welcome",
+            "title": "Welcome to Falkon",
+            "description": "Thank you for installing Falkon Language Support!\n\nThis extension provides syntax highlighting for .flk files, a Build & Run command (default F4), and a status bar compiler indicator.\n\nFollow the next steps to finish setup.",
             "media": {
               "image": "resources/images/falkon_256x256-removebg.png",
-              "altText": "Falkon language logo"
+              "altText": "Falkon Logo"
             }
           },
           {
-            "id": "installCliStep",
+            "id": "verifyCli",
             "title": "Verify Falkon CLI",
-            "description": "The `falkon` compiler must be installed and available in your system **PATH** before you can build `.flk` files.\n\n[$(terminal) Run Falkon CLI Check](command:falkon.checkCli)\n\nThis opens a **Falkon Check** terminal running `falkon -v` and updates the status bar in the bottom-right corner.\n\nIf the check fails, add the Falkon compiler directory to your system Environment Variables (`PATH`).",
+            "description": "The falkon compiler must be in your system PATH.\n\n[Run CLI Check](command:falkon.checkCli)\n\nThis opens a terminal running falkon -v and updates the status bar.",
             "media": {
               "image": "resources/images/falkon_256x256-removebg.png",
-              "altText": "Falkon CLI verification"
+              "altText": "Falkon CLI Check"
             },
             "completionEvents": [
               "onCommand:falkon.checkCli"
             ]
           },
           {
-            "id": "configureShortcutStep",
-            "title": "Configure Build & Run Shortcut",
-            "description": "The default build and run shortcut is **F4**. You can change it to `Ctrl+F5`, `F7`, or disable it entirely.\n\n[$(settings-gear) Open Falkon Settings](command:falkon.openSettings)\n\nTo use a completely custom key, open **Keyboard Shortcuts** (`Ctrl+K Ctrl+S`) and search for `falkon.buildAndRun`.",
+            "id": "configureShortcut",
+            "title": "Configure Build Shortcut",
+            "description": "The default shortcut is F4. You can change it to Ctrl+F5, F7, or none from settings.\n\n[Open Falkon Settings](command:falkon.openSettings)",
             "media": {
               "image": "resources/images/falkon_256x256-removebg.png",
-              "altText": "Falkon shortcut settings"
+              "altText": "Falkon Settings"
             },
             "completionEvents": [
               "onCommand:falkon.openSettings",

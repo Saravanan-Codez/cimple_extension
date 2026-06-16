@@ -262,7 +262,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("falkon.showWalkthrough", () => {
       vscode.commands.executeCommand(
         "workbench.action.openWalkthrough",
-        `${extensionId}#falkon.walkthrough`,
+        `${extensionId}#falkonWalkthrough`,
         false
       );
     })
@@ -307,7 +307,7 @@ export function activate(context: vscode.ExtensionContext): void {
     setTimeout(() => {
       vscode.commands.executeCommand(
         "workbench.action.openWalkthrough",
-        `${extensionId}#falkon.walkthrough`,
+        `${extensionId}#falkonWalkthrough`,
         false
       );
     }, 500);

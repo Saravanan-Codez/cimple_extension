@@ -221,7 +221,7 @@ function activate(context) {
     }));
     // --- Register: falkon.showWalkthrough ---
     context.subscriptions.push(vscode.commands.registerCommand("falkon.showWalkthrough", () => {
-        vscode.commands.executeCommand("workbench.action.openWalkthrough", `${extensionId}#falkon.walkthrough`, false);
+        vscode.commands.executeCommand("workbench.action.openWalkthrough", `${extensionId}#falkonWalkthrough`, false);
     }));
     // Show / hide status bar item based on whether a .flk file is active
     const updateStatusBarVisibility = (editor) => {
@@ -258,7 +258,7 @@ function activate(context) {
         hasShownInSession = true;
         context.globalState.update("lastVersion", currentVersion);
         setTimeout(() => {
-            vscode.commands.executeCommand("workbench.action.openWalkthrough", `${extensionId}#falkon.walkthrough`, false);
+            vscode.commands.executeCommand("workbench.action.openWalkthrough", `${extensionId}#falkonWalkthrough`, false);
         }, 500);
     }
 }
