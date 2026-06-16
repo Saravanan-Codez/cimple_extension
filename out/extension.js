@@ -196,7 +196,7 @@ function activate(context) {
     context.subscriptions.push(openSettingsCommand);
     // Register showWalkthrough command
     const showWalkthroughCommand = vscode.commands.registerCommand("falkon.showWalkthrough", () => {
-        vscode.commands.executeCommand("workbench.action.openWalkthrough", "Falkon-Industries.falkon-language#falkon.walkthrough", false);
+        vscode.commands.executeCommand("workbench.action.openWalkthrough", "falkon-industries.falkon-language#falkon.walkthrough", false);
     });
     context.subscriptions.push(showWalkthroughCommand);
     // Monitor editor changes to show/hide status bar item
@@ -218,7 +218,7 @@ function activate(context) {
     const hasShownInSession = context.workspaceState.get("hasShownInSession", false);
     if (lastVersion !== currentVersion || !hasShownInSession) {
         setTimeout(() => {
-            vscode.commands.executeCommand("workbench.action.openWalkthrough", "Falkon-Industries.falkon-language#falkon.walkthrough", false);
+            vscode.commands.executeCommand("workbench.action.openWalkthrough", "falkon-industries.falkon-language#falkon.walkthrough", false);
         }, 1000);
         context.globalState.update("lastVersion", currentVersion);
         context.workspaceState.update("hasShownInSession", true);
