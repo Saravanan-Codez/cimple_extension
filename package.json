@@ -12,7 +12,9 @@
   "categories": [
     "Programming Languages"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -87,6 +89,10 @@
       {
         "command": "falkon.checkCli",
         "title": "Falkon: Verify CLI Installation"
+      },
+      {
+        "command": "falkon.openSettings",
+        "title": "Falkon: Open Extension Settings"
       }
     ],
     "languages": [

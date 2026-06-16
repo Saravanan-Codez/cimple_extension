@@ -1,10 +1,10 @@
-# Build & Run Shortcuts
+# Configure Build & Run Hotkeys
 
-By default, the compilation and execution command is triggered by pressing **`F4`** in a Falkon (`.flk`) editor.
+By default, the compile-and-run action is triggered by pressing the **`F4`** key.
 
-## Change the Shortcut Preset
-You can select between different default presets (such as `F4`, `Ctrl+F5`, or `F7`) from the settings dropdown.
+## Select Preset or Customize
+Click the button below to open the settings UI. You can choose from presets like `F4`, `Ctrl+F5`, `F7`, or `none`.
 
-[Configure Shortcut Setting](command:workbench.action.openSettings?%5B%22falkon.shortcutPreset%22%5D)
+[Configure Falkon settings](command:falkon.openSettings)
 
-*Note: You can also define completely custom shortcuts using VS Code's standard Keyboard Shortcuts configuration.*
+*Need custom shortcuts? Use VS Code's native Keyboard Shortcuts configuration editor (`Ctrl+K Ctrl+S`) to bind `falkon.buildAndRun` to any key sequence.*

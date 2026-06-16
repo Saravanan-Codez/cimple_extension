@@ -1,10 +1,10 @@
-# Install & Verify Falkon CLI
+# Verify Falkon CLI Installation
 
-Falkon source files require the `falkon` compiler command-line interface to be installed and available in your system `PATH`.
+Before compiling your first `.flk` file, we need to verify that the `falkon` compiler is installed and added to your system environment variables (`PATH`).
 
-## How to Verify
-Click the button below to check if the Falkon CLI is correctly configured.
+## Run Interactive PATH Check
+Click the button below. This will **pop up a terminal window running `falkon -v`** to verify the CLI status on your system and update the status bar.
 
-[Verify Falkon CLI Installation](command:falkon.checkCli)
+[Verify Falkon CLI (Run falkon -v)](command:falkon.checkCli)
 
-*If missing, make sure you download and add the Falkon compiler binary directory to your system Environment Variables (`PATH`).*
+*If the terminal check fails or returns an error, please ensure you download the Falkon compiler CLI and add its directory to your system Environment Variables (`PATH`).*

@@ -173,9 +173,25 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register checkCli command
   const checkCliCommand = vscode.commands.registerCommand("falkon.checkCli", async () => {
+    let terminal = vscode.window.terminals.find((t: vscode.Terminal) => t.name === "Falkon Check");
+    if (!terminal) {
+      const isWindows = process.platform === "win32";
+      terminal = vscode.window.createTerminal({
+        name: "Falkon Check",
+        shellPath: isWindows ? "powershell.exe" : undefined
+      });
+    }
+    terminal.show(false);
+    terminal.sendText("falkon -v");
     await checkFalkonInstallation(true);
   });
   context.subscriptions.push(checkCliCommand);
+
+  // Register openSettings command
+  const openSettingsCommand = vscode.commands.registerCommand("falkon.openSettings", () => {
+    vscode.commands.executeCommand("workbench.action.openSettings", "falkon");
+  });
+  context.subscriptions.push(openSettingsCommand);
 
   // Monitor editor changes to show/hide status bar item
   const updateStatusBarVisibility = (editor?: vscode.TextEditor) => {
