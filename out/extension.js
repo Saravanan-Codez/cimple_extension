@@ -209,6 +209,9 @@ function activate(context) {
         await context.globalState.update("falkon.walkthroughCompleted", undefined);
         await context.globalState.update("falkon.walkthroughPromptDismissed", undefined);
         hasPromptedThisSession = false;
+        if (welcomePanel) {
+            welcomePanel.webview.postMessage({ command: "resetProgress" });
+        }
         vscode.window.showInformationMessage("Falkon onboarding state has been reset.");
     }));
     // Listen for config changes to track shortcut configuration step completion
@@ -756,24 +759,43 @@ function getWelcomeHtml(welcomeSvgUri, verifyCliSvgUri, configureShortcutSvgUri,
     window.addEventListener('message', event => {
       const message = event.data;
       switch (message.command) {
+        case 'resetProgress': {
+          isCliReady = false;
+          isShortcutConfigured = false;
+          const selectElement = document.getElementById('select-shortcut');
+          if (selectElement) {
+            selectElement.value = 'f4';
+          }
+          const badge = document.getElementById('cli-badge');
+          if (badge) {
+            badge.className = 'status-badge badge-checking';
+            badge.innerText = 'Checking...';
+          }
+          vscode.postMessage({ command: 'verifyCli' });
+          updateProgress();
+          break;
+        }
         case 'updateSettings':
           document.getElementById('select-shortcut').value = message.shortcutPreset;
           isShortcutConfigured = true;
           updateProgress();
           break;
-        case 'updateCliStatus':
+        case 'updateCliStatus': {
           const badge = document.getElementById('cli-badge');
-          if (message.status === 'ready') {
-            badge.className = 'status-badge badge-ready';
-            badge.innerText = 'Ready (' + message.version + ')';
-            isCliReady = true;
-          } else {
-            badge.className = 'status-badge badge-missing';
-            badge.innerText = 'Missing CLI';
-            isCliReady = false;
+          if (badge) {
+            if (message.status === 'ready') {
+              badge.className = 'status-badge badge-ready';
+              badge.innerText = 'Ready (' + message.version + ')';
+              isCliReady = true;
+            } else {
+              badge.className = 'status-badge badge-missing';
+              badge.innerText = 'Missing CLI';
+              isCliReady = false;
+            }
           }
           updateProgress();
           break;
+        }
       }
     });
 
