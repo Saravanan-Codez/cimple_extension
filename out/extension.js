@@ -153,13 +153,6 @@ function activate(context) {
         }
         await buildAndRun(editor.document);
     }));
-    const checkCompletionStatus = () => {
-        const hasVerifiedCli = context.globalState.get("falkon.hasVerifiedCli", false);
-        const hasOpenedSettings = context.globalState.get("falkon.hasOpenedSettings", false);
-        if (hasVerifiedCli && hasOpenedSettings) {
-            context.globalState.update("falkon.walkthroughCompleted", true);
-        }
-    };
     let hasPromptedThisSession = false;
     const triggerOnboardingPrompt = () => {
         if (hasPromptedThisSession) {
@@ -183,7 +176,7 @@ function activate(context) {
     // Command: falkon.checkCli
     context.subscriptions.push(vscode.commands.registerCommand("falkon.checkCli", async () => {
         context.globalState.update("falkon.hasVerifiedCli", true);
-        checkCompletionStatus();
+        checkCompletionStatus(context);
         const existing = vscode.window.terminals.find((t) => t.name === "Falkon Check");
         if (existing) {
             existing.dispose();
@@ -202,7 +195,7 @@ function activate(context) {
     // Command: falkon.openSettings
     context.subscriptions.push(vscode.commands.registerCommand("falkon.openSettings", () => {
         context.globalState.update("falkon.hasOpenedSettings", true);
-        checkCompletionStatus();
+        checkCompletionStatus(context);
         vscode.commands.executeCommand("workbench.action.openSettings", "falkon");
     }));
     // Command: falkon.showWalkthrough (opens our custom welcome webview)
@@ -222,7 +215,7 @@ function activate(context) {
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e) => {
         if (e.affectsConfiguration("falkon.shortcutPreset") || e.affectsConfiguration("falkon.enableDebugIntercept")) {
             context.globalState.update("falkon.hasOpenedSettings", true);
-            checkCompletionStatus();
+            checkCompletionStatus(context);
         }
     }));
     // Status bar: show only when a .flk file is active
@@ -244,7 +237,8 @@ function activate(context) {
     checkFalkonInstallation(statusBarItem, false);
     // ─── Auto-open welcome page ────────────────────────────────────────────────
     const lastVersion = context.globalState.get("lastVersion");
-    if (!hasShownInSession || lastVersion !== currentVersion) {
+    const isCompleted = context.globalState.get("falkon.walkthroughCompleted", false);
+    if (!isCompleted && (!hasShownInSession || lastVersion !== currentVersion)) {
         hasShownInSession = true;
         context.globalState.update("lastVersion", currentVersion);
         console.log("Falkon: scheduling welcome page open");
@@ -274,8 +268,10 @@ function showWelcomeWebview(context) {
     // Load configuration
     const config = vscode.workspace.getConfiguration("falkon");
     const initialShortcutPreset = config.get("shortcutPreset", "f4");
+    const hasVerifiedCli = context.globalState.get("falkon.hasVerifiedCli", false);
+    const hasOpenedSettings = context.globalState.get("falkon.hasOpenedSettings", false);
     // Load initial HTML Content
-    welcomePanel.webview.html = getWelcomeHtml(welcomeSvgUri, verifyCliSvgUri, configureShortcutSvgUri, initialShortcutPreset);
+    welcomePanel.webview.html = getWelcomeHtml(welcomeSvgUri, verifyCliSvgUri, configureShortcutSvgUri, initialShortcutPreset, hasVerifiedCli, hasOpenedSettings);
     // Function to update CLI status inside webview
     const updateCliStatusInWebview = (status, version) => {
         if (welcomePanel) {
@@ -292,6 +288,8 @@ function showWelcomeWebview(context) {
             updateCliStatusInWebview("missing");
         }
         else {
+            context.globalState.update("falkon.hasVerifiedCli", true);
+            checkCompletionStatus(context);
             const version = stdout.trim() || stderr.trim() || "unknown";
             updateCliStatusInWebview("ready", version);
         }
@@ -317,6 +315,8 @@ function showWelcomeWebview(context) {
                 if (statusBarItem) {
                     const isInstalled = await checkFalkonInstallation(statusBarItem, true);
                     if (isInstalled) {
+                        context.globalState.update("falkon.hasVerifiedCli", true);
+                        checkCompletionStatus(context);
                         cp.exec("falkon -v", (error, stdout, stderr) => {
                             const version = stdout.trim() || stderr.trim() || "unknown";
                             updateCliStatusInWebview("ready", version);
@@ -334,9 +334,12 @@ function showWelcomeWebview(context) {
                     .getConfiguration("falkon")
                     .update("shortcutPreset", newPreset, vscode.ConfigurationTarget.Global);
                 context.globalState.update("falkon.hasOpenedSettings", true);
+                checkCompletionStatus(context);
                 break;
             }
             case "createFile": {
+                // Complete walkthrough state
+                context.globalState.update("falkon.walkthroughCompleted", true);
                 // Create new main.flk
                 let targetUri;
                 const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -363,6 +366,14 @@ function showWelcomeWebview(context) {
                 break;
             }
             case "close": {
+                context.globalState.update("falkon.walkthroughCompleted", true);
+                if (welcomePanel) {
+                    welcomePanel.dispose();
+                }
+                break;
+            }
+            case "skip": {
+                context.globalState.update("falkon.walkthroughCompleted", true);
                 if (welcomePanel) {
                     welcomePanel.dispose();
                 }
@@ -387,7 +398,7 @@ function showWelcomeWebview(context) {
         configListener.dispose();
     });
 }
-function getWelcomeHtml(welcomeSvgUri, verifyCliSvgUri, configureShortcutSvgUri, initialShortcutPreset) {
+function getWelcomeHtml(welcomeSvgUri, verifyCliSvgUri, configureShortcutSvgUri, initialShortcutPreset, initialVerifiedCli, initialOpenedSettings) {
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -419,29 +430,77 @@ function getWelcomeHtml(welcomeSvgUri, verifyCliSvgUri, configureShortcutSvgUri,
     }
     .header {
       text-align: center;
-      margin-bottom: 48px;
+      margin-bottom: 32px;
     }
     .logo {
-      width: 128px;
-      height: 128px;
+      width: 110px;
+      height: 110px;
       margin-bottom: 16px;
     }
     h1 {
-      font-size: 36px;
+      font-size: 32px;
       font-weight: 700;
       margin: 0 0 8px 0;
       letter-spacing: -0.5px;
     }
     .subtitle {
-      font-size: 16px;
+      font-size: 15px;
       opacity: 0.8;
       margin: 0;
+    }
+    .progress-section {
+      background: var(--vscode-welcomePage-tileBackground, rgba(255, 255, 255, 0.02));
+      border: 1px solid var(--vscode-welcomePage-tileBorder, rgba(255, 255, 255, 0.08));
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 32px;
+    }
+    .progress-text {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .progress-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #8A2BE2, #00FFFF);
+      width: 0%;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .checklist {
+      display: flex;
+      gap: 28px;
+      justify-content: center;
+    }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      opacity: 0.5;
+      transition: opacity 0.3s, color 0.3s;
+    }
+    .check-item.completed {
+      opacity: 1;
+      color: #00FF87;
+      font-weight: 600;
+    }
+    .check-item .check-icon {
+      font-size: 14px;
     }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 24px;
-      margin-bottom: 48px;
+      margin-bottom: 40px;
     }
     .card {
       background: var(--vscode-welcomePage-tileBackground, rgba(255, 255, 255, 0.03));
@@ -461,27 +520,27 @@ function getWelcomeHtml(welcomeSvgUri, verifyCliSvgUri, configureShortcutSvgUri,
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
     }
     .card-icon {
-      width: 80px;
-      height: 80px;
+      width: 76px;
+      height: 76px;
       margin-bottom: 16px;
     }
     .card h2 {
-      font-size: 18px;
-      margin: 0 0 12px 0;
+      font-size: 17px;
+      margin: 0 0 10px 0;
       font-weight: 600;
     }
     .card p {
       font-size: 13px;
       line-height: 1.5;
       opacity: 0.7;
-      margin: 0 0 24px 0;
+      margin: 0 0 20px 0;
       flex-grow: 1;
     }
     .status-badge {
       display: inline-flex;
       align-items: center;
       padding: 4px 10px;
-      font-size: 10px;
+      font-size: 9px;
       font-weight: bold;
       border-radius: 20px;
       margin-bottom: 16px;
@@ -510,7 +569,7 @@ function getWelcomeHtml(welcomeSvgUri, verifyCliSvgUri, configureShortcutSvgUri,
       border-radius: 6px;
       cursor: pointer;
       width: 100%;
-      transition: background-color 0.2s;
+      transition: background-color 0.2s, box-shadow 0.3s;
       box-sizing: border-box;
     }
     .btn:hover {
@@ -541,9 +600,10 @@ function getWelcomeHtml(welcomeSvgUri, verifyCliSvgUri, configureShortcutSvgUri,
       align-items: center;
       border-top: 1px solid rgba(255, 255, 255, 0.08);
       padding-top: 32px;
+      gap: 16px;
     }
     .footer-btn {
-      max-width: 220px;
+      max-width: 180px;
     }
   </style>
 </head>
@@ -553,6 +613,25 @@ function getWelcomeHtml(welcomeSvgUri, verifyCliSvgUri, configureShortcutSvgUri,
       <img class="logo" src="${welcomeSvgUri}" alt="Falkon Logo" />
       <h1>Welcome to Falkon</h1>
       <p class="subtitle">Sleek, Python-compatible syntax highlighting and build tools for VS Code.</p>
+    </div>
+
+    <!-- Onboarding Progress Section -->
+    <div class="progress-section">
+      <div class="progress-text">
+        <span>Onboarding Progress</span>
+        <span id="progress-percent">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div id="progress-fill" class="progress-fill" style="width: 0%;"></div>
+      </div>
+      <div class="checklist">
+        <div class="check-item" id="check-cli">
+          <span class="check-icon">○</span> Verify Falkon CLI
+        </div>
+        <div class="check-item" id="check-shortcut">
+          <span class="check-icon">○</span> Configure Shortcut Preset
+        </div>
+      </div>
     </div>
 
     <div class="grid">
@@ -590,12 +669,50 @@ function getWelcomeHtml(welcomeSvgUri, verifyCliSvgUri, configureShortcutSvgUri,
     </div>
 
     <div class="footer">
+      <button id="btn-skip" class="btn btn-secondary footer-btn">Skip / Do Later</button>
       <button id="btn-close" class="btn footer-btn">Finish Setup</button>
     </div>
   </div>
 
   <script>
     const vscode = acquireVsCodeApi();
+
+    let isCliReady = ${initialVerifiedCli};
+    let isShortcutConfigured = ${initialOpenedSettings};
+
+    function updateProgress() {
+      let completedCount = 0;
+      if (isCliReady) {
+        completedCount++;
+        document.getElementById('check-cli').classList.add('completed');
+        document.getElementById('check-cli').querySelector('.check-icon').innerText = '✓';
+      } else {
+        document.getElementById('check-cli').classList.remove('completed');
+        document.getElementById('check-cli').querySelector('.check-icon').innerText = '○';
+      }
+
+      if (isShortcutConfigured) {
+        completedCount++;
+        document.getElementById('check-shortcut').classList.add('completed');
+        document.getElementById('check-shortcut').querySelector('.check-icon').innerText = '✓';
+      } else {
+        document.getElementById('check-shortcut').classList.remove('completed');
+        document.getElementById('check-shortcut').querySelector('.check-icon').innerText = '○';
+      }
+
+      const percent = Math.round((completedCount / 2) * 100);
+      document.getElementById('progress-percent').innerText = percent + '%';
+      document.getElementById('progress-fill').style.width = percent + '%';
+
+      const closeBtn = document.getElementById('btn-close');
+      if (percent === 100) {
+        closeBtn.innerText = 'Complete Setup 🎉';
+        closeBtn.style.boxShadow = '0 0 12px rgba(0, 255, 135, 0.4)';
+      } else {
+        closeBtn.innerText = 'Finish Setup';
+        closeBtn.style.boxShadow = 'none';
+      }
+    }
 
     document.getElementById('btn-verify').addEventListener('click', () => {
       const badge = document.getElementById('cli-badge');
@@ -605,6 +722,8 @@ function getWelcomeHtml(welcomeSvgUri, verifyCliSvgUri, configureShortcutSvgUri,
     });
 
     document.getElementById('select-shortcut').addEventListener('change', (e) => {
+      isShortcutConfigured = true;
+      updateProgress();
       vscode.postMessage({ command: 'changeShortcut', preset: e.target.value });
     });
 
@@ -616,26 +735,45 @@ function getWelcomeHtml(welcomeSvgUri, verifyCliSvgUri, configureShortcutSvgUri,
       vscode.postMessage({ command: 'close' });
     });
 
+    document.getElementById('btn-skip').addEventListener('click', () => {
+      vscode.postMessage({ command: 'skip' });
+    });
+
     window.addEventListener('message', event => {
       const message = event.data;
       switch (message.command) {
         case 'updateSettings':
           document.getElementById('select-shortcut').value = message.shortcutPreset;
+          isShortcutConfigured = true;
+          updateProgress();
           break;
         case 'updateCliStatus':
           const badge = document.getElementById('cli-badge');
           if (message.status === 'ready') {
             badge.className = 'status-badge badge-ready';
             badge.innerText = 'Ready (' + message.version + ')';
+            isCliReady = true;
           } else {
             badge.className = 'status-badge badge-missing';
             badge.innerText = 'Missing CLI';
+            isCliReady = false;
           }
+          updateProgress();
           break;
       }
     });
+
+    // Run initial progress check
+    updateProgress();
   </script>
 </body>
 </html>`;
+}
+function checkCompletionStatus(context) {
+    const hasVerifiedCli = context.globalState.get("falkon.hasVerifiedCli", false);
+    const hasOpenedSettings = context.globalState.get("falkon.hasOpenedSettings", false);
+    if (hasVerifiedCli && hasOpenedSettings) {
+        context.globalState.update("falkon.walkthroughCompleted", true);
+    }
 }
 //# sourceMappingURL=extension.js.map
