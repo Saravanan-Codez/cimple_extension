@@ -5,4 +5,7 @@ vsc-extension-quickstart.md
 .npm-cache/**
 src/**
 tsconfig.json
+.eslintrc.json
+ci_cd.log
+.github/**
 

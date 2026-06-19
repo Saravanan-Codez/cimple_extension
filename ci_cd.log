@@ -1,0 +1,41 @@
+[GitHub CI/CD Run Log - June 19, 2026]
+Job: Lint Code (npm run lint)
+Status: FAILED (Exit Code 1)
+
+Oops! Something went wrong! :(
+
+ESLint: 8.57.1
+
+ESLint couldn't find a configuration file. To set up a configuration file for this project, please run:
+
+    npm init @eslint/config
+
+ESLint looked for configuration files in /home/runner/work/falkon_extension/falkon_extension/src and its ancestors. If it found none, it then looked in your home directory.
+
+---------------------------------------------------------
+[RESOLUTION]
+Created `.eslintrc.json` in the root folder with the following configuration:
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "rules": {
+    "@typescript-eslint/naming-convention": "warn",
+    "@typescript-eslint/semi": "warn",
+    "curly": "warn",
+    "eqeqeq": "warn",
+    "no-throw-literal": "warn",
+    "semi": "off"
+  },
+  "ignorePatterns": [
+    "out",
+    "dist",
+    "**/*.d.ts"
+  ]
+}
