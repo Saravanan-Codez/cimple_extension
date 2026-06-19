@@ -5,7 +5,7 @@
   "description": "Professional Python-compatible syntax highlighting and build support for the Falkon language.",
   "version": "0.1.0",
   "author": "Falkon Industries",
-  "publisher": "Falkon-Industries",
+  "publisher": "Falkon-Labs",
   "engines": {
     "vscode": "^1.90.0"
   },
